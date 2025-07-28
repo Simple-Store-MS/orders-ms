@@ -1,16 +1,23 @@
-import { IsBoolean, IsOptional, IsPositive } from 'class-validator';
-import { OrderStatus } from '../../../generated/prisma';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsPositive,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateOrderDto {
-  @IsBoolean()
-  paid: boolean;
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemDto)
+  items: OrderItemDto[];
+}
 
-  @IsOptional()
-  status: OrderStatus = OrderStatus.PENDING;
+export class OrderItemDto {
+  @IsPositive()
+  productId: number;
 
   @IsPositive()
-  totalAmount: number;
-
-  @IsPositive()
-  totalItems: number;
+  quantity: number;
 }
