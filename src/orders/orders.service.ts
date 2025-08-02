@@ -6,11 +6,11 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { CreateOrderDto, OrderItemDto } from './dto/create-order.dto';
-import { OrderItem, PrismaClient } from '../../generated/prisma';
+import { PrismaClient } from '../../generated/prisma';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { OrdersPagination } from './dto/orders-pagination.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { PRODUCTS_SERVICE } from '../config';
+import { NATS_SERVICE } from '../config';
 import { firstValueFrom } from 'rxjs';
 import { Product } from './entities/product.entity';
 import { ValidateProductsDto } from './dto/validate-products.dto';
@@ -20,8 +20,8 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
   private readonly logger = new Logger(OrdersService.name);
 
   public constructor(
-    @Inject(PRODUCTS_SERVICE)
-    private readonly productsService: ClientProxy,
+    @Inject(NATS_SERVICE)
+    private readonly natsService: ClientProxy,
   ) {
     super();
   }
@@ -157,7 +157,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
   ): Promise<Map<number, Product>> {
     try {
       const products = await firstValueFrom<Product[]>(
-        this.productsService.send('VALIDATE_PRODUCTS', input),
+        this.natsService.send('VALIDATE_PRODUCTS', input),
       );
 
       const productsMap = new Map<number, Product>();
